@@ -31,7 +31,8 @@
 -include_lib("xmlrat/include/records.hrl").
 -compile({parse_transform, xmlrat_parse_transform}).
 
--export([match_assertion/1, gen_assertion/1, match_response/1, gen_response/1]).
+-export([
+    ]).
 
 -include_lib("ratsaml/include/records.hrl").
 
@@ -41,20 +42,20 @@
     }).
 
 -xpath_record({match_name_id, saml_name_id, #{
-    name_qualifier => "/saml:NameId/@NameQualifier",
-    sp_name_qualifier => "/saml:NameId/@SPNameQualifier",
-    format => "/saml:NameId/@Format",
-    sp_provided_id => "/saml:NameId/@SPProvidedID",
-    name => "/saml:NameId/text()"
+    name_qualifier => "/saml:NameID/@NameQualifier",
+    sp_name_qualifier => "/saml:NameID/@SPNameQualifier",
+    format => "/saml:NameID/@Format",
+    sp_provided_id => "/saml:NameID/@SPProvidedID",
+    name => "/saml:NameID/text()"
     }, ?NS}).
 -xml_record({gen_name_id, saml_name_id,
-    "<saml:NameId "
+    "<saml:NameID "
         "NameQualifier='&name_qualifier;' "
         "SPNameQualifier='&sp_name_qualifier;' "
         "Format='&format;' "
         "SPProvidedID='&sp_provided_id;'>"
         "&name;"
-    "</saml:NameId>", ?NS}).
+    "</saml:NameID>", ?NS}).
 
 -xpath_record({match_issuer, saml_issuer, #{
     name_qualifier => "/saml:Issuer/@NameQualifier",
@@ -93,7 +94,7 @@
     "</saml:SubjectConfirmation>", ?NS}).
 
 -xpath_record({match_subject, saml_subject, #{
-    name => "/saml:Subject/saml:NameId",
+    name => "/saml:Subject/saml:NameID",
     confirmations => "/saml:Subject/saml:SubjectConfirmation"
     }, ?NS}).
 -xml_record({gen_subject, saml_subject,
@@ -237,3 +238,163 @@
         "&status;"
         "&assertions;"
     "</samlp:Response>", ?NS}).
+
+-xpath_record({match_req_authn_context, saml_req_authn_context, #{
+    class_ref => "/samlp:RequestedAuthnContext/saml:AuthnContextClassRef/text()",
+    comparison => "/samlp:RequestedAuthnContext/@Comparison"
+    }, ?NS}).
+-xml_record({gen_req_authn_context, saml_req_authn_context,
+    "<samlp:RequestedAuthnContext Comparison='&comparison;'>"
+        "<mxsl:if defined='class_ref'>"
+            "<saml:AuthnContextClassRef>&class_ref;</saml:AuthnContextClassRef>"
+        "</mxsl:if>"
+    "</samlp:RequestedAuthnContext>", ?NS}).
+
+-xpath_record({match_name_id_policy, saml_name_id_policy, #{
+    format => "/samlp:NameIDPolicy/@Format",
+    sp_name_qualifier => "/samlp:NameIDPolicy/@SPNameQualifier",
+    allow_create => "/samlp:NameIDPolicy/@AllowCreate"
+    }, ?NS}).
+-xml_record({gen_name_id_policy, saml_name_id_policy,
+    "<samlp:NameIDPolicy Format='&format;' "
+        "SPNameQualifier='&sp_name_qualifier;'>"
+        "<mxsl:if true='allow_create'>"
+            "<mxsl:attribute name='AllowCreate'>true</mxsl:attribute>"
+        "</mxsl:if>"
+    "</samlp:NameIDPolicy>", ?NS}).
+
+-xpath_record({match_authn_request, saml_authn_request, #{
+    version => "/samlp:AuthnRequest/@Version",
+    id => "/samlp:AuthnRequest/@ID",
+    issue_instant => "/samlp:AuthnRequest/@IssueInstant",
+    destination => "/samlp:AuthnRequest/@Destination",
+    consent => "/samlp:AuthnRequest/@Consent",
+    issuer => "/samlp:AuthnRequest/saml:Issuer",
+    subject => "/samlp:AuthnRequest/saml:Subject",
+    name_id_policy => "/samlp:AuthnRequest/samlp:NameIDPolicy",
+    conditions => "/samlp:AuthnRequest/saml:Conditions",
+    context => "/samlp:AuthnRequest/samlp:RequestedAuthnContext",
+    force_authn => "/samlp:AuthnRequest/@ForceAuthn",
+    passive => "/samlp:AuthnRequest/@IsPassive",
+    assertion_svc_index => "/samlp:AuthnRequest/@AssertionConsumerServiceIndex",
+    assertion_svc_url => "/samlp:AuthnRequest/@AssertionConsumerServiceURL",
+    attribute_svc_index => "/samlp:AuthnRequest/@AttributeConsumingServiceIndex",
+    binding => "/samlp:AuthnRequest/@ProtocolBinding",
+    provider_name => "/samlp:AuthnRequest/@ProviderName"
+    }, ?NS}).
+-xml_record({gen_authn_request, saml_authn_request,
+    "<samlp:AuthnRequest Version='&version;' ID='&id;' "
+        "IssueInstant='&issue_instant;' "
+        "Destination='&destination;' "
+        "Consent='&consent;' "
+        "AssertionConsumerServiceIndex='&assertion_svc_index;' "
+        "AssertionConsumerServiceURL='&assertion_svc_url;' "
+        "AttributeConsumingServiceIndex='&attribute_svc_index;' "
+        "ProtocolBinding='&binding;' "
+        "ProviderName='&provider_name;'>"
+        "<mxsl:if true='force_authn'>"
+            "<mxsl:attribute name='ForceAuthn'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "<mxsl:if true='passive'>"
+            "<mxsl:attribute name='IsPassive'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "&subject;"
+        "&name_id_policy;"
+        "&conditions;"
+        "&context;"
+    "</samlp:AuthnRequest>", ?NS}).
+
+-xpath_record({match_logout_request, saml_logout_request, #{
+    version => "/samlp:LogoutRequest/@Version",
+    id => "/samlp:LogoutRequest/@ID",
+    issue_instant => "/samlp:LogoutRequest/@IssueInstant",
+    destination => "/samlp:LogoutRequest/@Destination",
+    consent => "/samlp:LogoutRequest/@Consent",
+    issuer => "/samlp:LogoutRequest/saml:Issuer",
+    not_on_or_after => "/samlp:LogoutRequest/@NotOnOrAfter",
+    reason => "/samlp:LogoutRequest/@Reason",
+    name_id => "/samlp:LogoutRequest/saml:NameID",
+    session_indexes => "/samlp:LogoutRequest/samlp:SessionIndex"
+    }, ?NS}).
+-xml_record({gen_logout_request, saml_logout_request,
+    "<samlp:LogoutRequest Version='&version;' ID='&id;' "
+        "IssueInstant='&issue_instant;' "
+        "Destination='&destination;' "
+        "Consent='&consent;' "
+        "NotOnOrAfter='&not_on_or_after;' "
+        "Reason='&reason;'>"
+        "&issuer;"
+        "&name_id;"
+        "<mxsl:for-each field='session_indexes' as='x'>"
+            "<samlp:SessionIndex>&x;</samlp:SessionIndex>"
+        "</mxsl:for-each>"
+    "</samlp:LogoutRequest>", ?NS}).
+
+-xpath_record({match_logout_response, saml_logout_response, #{
+    version => "/samlp:LogoutResponse/@Version",
+    id => "/samlp:LogoutResponse/@ID",
+    issue_instant => "/samlp:LogoutResponse/@IssueInstant",
+    in_response_to => "/samlp:LogoutResponse/@InResponseTo",
+    destination => "/samlp:LogoutResponse/@Destination",
+    consent => "/samlp:LogoutResponse/@Consent",
+    issuer => "/samlp:LogoutResponse/saml:Issuer",
+    status => "/samlp:LogoutResponse/samlp:Status"
+    }, ?NS}).
+-xml_record({gen_logout_response, saml_logout_response,
+    "<samlp:LogoutResponse Version='&version;' ID='&id;' "
+        "IssueInstant='&issue_instant;' "
+        "InResponseTo='&in_response_to;' "
+        "Destination='&destination;' "
+        "Consent='&consent;'>"
+        "&issuer;"
+        "&status;"
+    "</samlp:LogoutResponse>", ?NS}).
+
+-ifdef(TEST).
+-include_lib("eunit/include/eunit.hrl").
+
+samltool_authreq_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltool-authnreq.xml"),
+    Rec = match_authn_request(Doc),
+    ?assertMatch(#saml_authn_request{
+        id = <<"ONELOGIN_809707f0030a5d00620c9d9df97f627afe9dcc24">>,
+        issue_instant = <<"2014-07-16T23:52:45Z">>,
+        destination = <<"http://idp.example.com/SSOService.php">>,
+        issuer = #saml_issuer{
+            name = <<"http://sp.example.com/demo1/metadata.php">>},
+        binding = ?BD_http_post
+        }, Rec).
+
+samltool_response_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltool-response.xml"),
+    Rec = match_response(Doc),
+    ?assertMatch(#saml_response{
+        in_response_to = <<"ONELOGIN_4fee3b046395c4e751011e97f8900b5273d56685">>,
+        destination = <<"http://sp.example.com/demo1/index.php?acs">>,
+        status = #saml_status{code = ?ST_success},
+        issuer = #saml_issuer{
+            name = <<"http://idp.example.com/metadata.php">>
+            },
+        assertions = [#saml_assertion{
+            subject = #saml_subject{
+                name = #saml_name_id{format = ?NF_transient}
+                },
+            attributes = [
+                #saml_attribute{name = <<"uid">>,
+                                name_format = ?ANF_basic,
+                                values = [<<"test">>]}
+            | _]
+        }]
+        }, Rec).
+
+samltool_logoutreq_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltool-logoutreq.xml"),
+    Rec = match_logout_request(Doc),
+    ?assertMatch(#saml_logout_request{}, Rec).
+
+samltool_logoutresp_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltool-logoutresp.xml"),
+    Rec = match_logout_response(Doc),
+    ?assertMatch(#saml_logout_response{}, Rec).
+
+-endif.

@@ -46,6 +46,10 @@
 -define(NF_persistent, <<"urn:oasis:names:tc:SAML:2.0:nameid-format:persistent">>).
 -define(NF_transient, <<"urn:oasis:names:tc:SAML:2.0:nameid-format:transient">>).
 
+-define(ANF_unspec, <<"urn:oasis:names:tc:SAML:2.0:attrname-format:unspecified">>).
+-define(ANF_uri, <<"urn:oasis:names:tc:SAML:2.0:attrname-format:uri">>).
+-define(ANF_basic, <<"urn:oasis:names:tc:SAML:2.0:attrname-format:basic">>).
+
 -define(ST_success, <<"urn:oasis:names:tc:SAML:2.0:status:Success">>).
 -define(ST_requester_err, <<"urn:oasis:names:tc:SAML:2.0:status:Requester">>).
 -define(ST_responder_err, <<"urn:oasis:names:tc:SAML:2.0:status:Responder">>).
@@ -62,6 +66,13 @@
 -define(ST_unsupported, <<"urn:oasis:names:tc:SAML:2.0:status:RequestUnsupported">>).
 -define(ST_no_binding, <<"urn:oasis:names:tc:SAML:2.0:status:UnsupportedBinding">>).
 -define(ST_no_princ, <<"urn:oasis:names:tc:SAML:2.0:status:UnknownPrincipal">>).
+
+-define(BD_soap, <<"urn:oasis:names:tc:SAML:2.0:bindings:SOAP">>).
+-define(BD_paos, <<"urn:oasis:names:tc:SAML:2.0:bindings:PAOS">>).
+-define(BD_http_redir, <<"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect">>).
+-define(BD_http_post, <<"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST">>).
+-define(BD_http_artifact, <<"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact">>).
+-define(BD_uri, <<"urn:oasis:names:tc:SAML:2.0:bindings:URI">>).
 
 -type uri() :: binary().
 -type unique_id() :: binary().
@@ -157,4 +168,59 @@
     issuer :: undefined | #saml_issuer{},
     status :: #saml_status{},
     assertions :: [#saml_assertion{}]
+    }).
+
+-record(saml_req_authn_context, {
+    class_ref :: undefined | uri(),
+    comparison :: undefined | binary()
+    }).
+
+-record(saml_name_id_policy, {
+    format :: undefined | uri(),
+    sp_name_qualifier :: undefined | binary(),
+    allow_create = false :: boolean()
+    }).
+
+-record(saml_authn_request, {
+    version = "2.0" :: binary(),
+    id :: unique_id(),
+    issue_instant :: datetime(),
+    destination :: undefined | uri(),
+    consent :: undefined | uri(),
+    issuer :: undefined | #saml_issuer{},
+    subject :: undefined | #saml_subject{},
+    name_id_policy :: undefined | #saml_name_id_policy{},
+    conditions :: undefined | #saml_conditions{},
+    context :: undefined | #saml_req_authn_context{},
+    force_authn = false :: boolean(),
+    passive = false :: boolean(),
+    assertion_svc_index :: undefined | binary(),
+    assertion_svc_url :: undefined | uri(),
+    attribute_svc_index :: undefined | binary(),
+    binding :: undefined | uri(),
+    provider_name :: undefined | binary()
+    }).
+
+-record(saml_logout_request, {
+    version = "2.0" :: binary(),
+    id :: unique_id(),
+    issue_instant :: datetime(),
+    destination :: undefined | uri(),
+    consent :: undefined | uri(),
+    issuer :: undefined | #saml_issuer{},
+    not_on_or_after :: undefined | datetime(),
+    reason :: undefined | uri(),
+    name_id :: #saml_name_id{},
+    session_indexes :: undefined | [binary()]
+    }).
+
+-record(saml_logout_response, {
+    version = "2.0" :: binary(),
+    id :: unique_id(),
+    issue_instant :: datetime(),
+    in_response_to :: undefined | binary(),
+    destination :: undefined | uri(),
+    consent :: undefined | uri(),
+    issuer :: undefined | #saml_issuer{},
+    status :: #saml_status{}
     }).
