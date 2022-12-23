@@ -38,7 +38,9 @@
 
 -define(NS, #{
     <<"saml">> => ?NS_saml,
-    <<"samlp">> => ?NS_samlp
+    <<"samlp">> => ?NS_samlp,
+    <<"md">> => ?NS_md,
+    <<"ds">> => ?NS_dsig
     }).
 
 -xpath_record({match_name_id, saml_name_id, #{
@@ -349,6 +351,77 @@
         "&issuer;"
         "&status;"
     "</samlp:LogoutResponse>", ?NS}).
+
+-xpath_record({match_intl_string, saml_intl_string, #{
+    tag => "/*/name()",
+    lang => "/*/@xml:lang",
+    value => "/*/text()"
+    }}).
+-xml_record({gen_intl_string, saml_intl_string,
+    "<mxsl:tag mxsl:field='tag' xml:lang='&lang;>"
+        "&value;"
+    "</mxsl:tag>"}).
+
+-xpath_record({match_endpoint, saml_endpoint, #{
+    tag => "/*/name()",
+    binding => "/*/@Binding",
+    location => "/*/@Location",
+    response_location => "/*/@ResponseLocation",
+    index => "/*/@index",
+    default => "/*/@isDefault"
+    }, ?NS}).
+-xml_record({gen_endpoint, saml_endpoint,
+    "<mxsl:tag mxsl:field='tag' "
+        "Binding='&binding;' "
+        "Location='&location;' "
+        "ResponseLocation='&response_location;' "
+        "index='&index;'>"
+        "<mxsl:if true='default'>"
+            "<mxsl:attribute name='isDefault'>true</mxsl:attribute>"
+        "</mxsl:if>"
+    "</mxsl:tag>", ?NS}).
+
+-xpath_record({match_organization, saml_organization, #{
+    name => "/md:Organization/md:OrganizationName",
+    display_name => "/md:Organization/md:OrganizationDisplayName",
+    url => "/md:Organization/md:OrganizationURL"
+    }, ?NS}).
+-xml_record({gen_organization, saml_organization,
+    "<md:Organization>"
+        "&name;"
+        "&display_name;"
+        "&url;"
+    "</md:Organization>", ?NS}).
+
+-xpath_record({match_contact, saml_contact, #{
+    type => "/md:ContactPerson/@contactType",
+    company => "/md:ContactPerson/md:Company/text()",
+    given_name => "/md:ContactPerson/md:GivenName/text()",
+    surname => "/md:ContactPerson/md:SurName/text()",
+    email => "/md:ContactPerson/md:EmailAddress",
+    phone => "/md:ContactPerson/md:TelephoneNumber",
+    }, ?NS}).
+-xml_record({gen_contact, saml_contact,
+    "<md:ContactPerson contactType='&type;'>"
+        "<md:Company>&company;</md:Company>"
+        "<md:GivenName>&given_name;</md:GivenName>"
+        "<md:SurName>&surname;</md:SurName>"
+        "<mxsl:for-each field='email' as='x'>"
+            "<md:EmailAddress>&x;</md:EmailAddress>"
+        "</mxsl:for-each>"
+        "<mxsl:for-each field='phone' as='x'>"
+            "<md:TelephoneNumber>&x;</md:TelephoneNumber>"
+        "</mxsl:for-each>"
+    "</md:ContactPerson>", ?NS}).
+
+-xpath_record({match_key_info, saml_key_info, #{
+    use => "/md:KeyDescriptor/@use",
+    info => "/md:KeyDescriptor/ds:KeyInfo"
+    }, ?NS}).
+-xml_record({gen_key_info, sml_key_info,
+    "<md:KeyDescriptor use='&use;'>"
+        "&info;"
+    "</md:KeyDescriptor>", ?NS}).
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").

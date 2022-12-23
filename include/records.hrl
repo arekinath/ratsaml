@@ -74,6 +74,8 @@
 -define(BD_http_artifact, <<"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Artifact">>).
 -define(BD_uri, <<"urn:oasis:names:tc:SAML:2.0:bindings:URI">>).
 
+-define(PR_saml2, <<"urn:oasis:names:tc:SAML:2.0:protocol">>).
+
 -type uri() :: binary().
 -type unique_id() :: binary().
 -type datetime() :: binary().
@@ -149,7 +151,7 @@
     subject :: undefined | #saml_subject{},
     conditions :: undefined | #saml_conditions{},
     authn_stmt :: undefined | #saml_authn_stmt{},
-    attributes :: [#saml_attribute{}]
+    attributes = [] :: [#saml_attribute{}]
     }).
 
 -record(saml_status, {
@@ -167,7 +169,7 @@
     consent :: undefined | uri(),
     issuer :: undefined | #saml_issuer{},
     status :: #saml_status{},
-    assertions :: [#saml_assertion{}]
+    assertions = [] :: [#saml_assertion{}]
     }).
 
 -record(saml_req_authn_context, {
@@ -223,4 +225,77 @@
     consent :: undefined | uri(),
     issuer :: undefined | #saml_issuer{},
     status :: #saml_status{}
+    }).
+
+-record(saml_intl_string, {
+    tag :: xmlrat:tag(),
+    lang :: undefined | binary(),
+    value :: binary()
+    }).
+
+-record(saml_organization, {
+    name :: [#saml_intl_string{}],
+    display_name :: [#saml_intl_string{}],
+    url :: [#saml_intl_string{}]
+    }).
+
+-record(saml_contact, {
+    type :: binary(),
+    company :: undefined | binary(),
+    given_name :: undefined | binary(),
+    surname :: undefined | binary(),
+    email :: undefined | [binary()],
+    phone :: undefined | [binary()]
+    }).
+
+-record(saml_key_info, {
+    use :: binary(),
+    info :: xmlrat:document()
+    }).
+
+-record(saml_endpoint, {
+    tag :: xmlrat:tag(),
+    binding :: uri(),
+    location :: uri(),
+    response_location :: undefined | uri(),
+    index :: undefined | binary(),
+    default = false :: boolean()
+    }).
+
+-record(saml_idp_metadata, {
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    protocols :: binary(),
+    error_url :: undefined | uri(),
+    keys :: undefined | [#saml_key_info{}],
+    organization :: undefined | #saml_organization{},
+    contacts :: undefined | [#saml_contact{}],
+
+    % attributes etc
+    name_id_formats :: undefined | [uri()],
+    want_authn_reqs_signed = false :: boolean(),
+    attribute_profiles :: undefined | [uri()],
+    attributes :: undefined | [#saml_attribute{}],
+
+    % endpoints
+    artifact_resolution :: undefined | [#saml_endpoint{}],
+    single_logout :: undefined | [#saml_endpoint{}],
+    manage_name_id :: undefined | [#saml_endpoint{}],
+    single_sign_on :: [#saml_endpoint{}],
+    name_id_mapping :: [#saml_endpoint{}],
+    }).
+
+-record(saml_metadata, {
+    entity_id :: uri(),
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    organization :: undefined | #saml_organization{},
+    contacts :: undefined | [#saml_contact{}],
+    additional_md :: undefined | [uri()],
+    idp :: undefined | #saml_idp_metadata{},
+    sp :: undefined | #saml_sp_metadata{},
+    authn :: undefined | #saml_authn_metadata{},
+    pdp :: undefined | #saml_pdp_metadata{}
     }).
