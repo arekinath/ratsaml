@@ -234,9 +234,12 @@
     }).
 
 -record(saml_organization, {
-    name :: [#saml_intl_string{}],
-    display_name :: [#saml_intl_string{}],
-    url :: [#saml_intl_string{}]
+    name :: [xmlrat:tagged_record(#saml_intl_string{},
+        {'md', 'OrganizationName'})],
+    display_name :: [xmlrat:tagged_record(#saml_intl_string{},
+        {'md', 'OrganizationDisplayName'})],
+    url :: [xmlrat:tagged_record(#saml_intl_string{},
+        {'md', 'OrganizationURL'})]
     }).
 
 -record(saml_contact, {
@@ -268,22 +271,134 @@
     cache_duration :: undefined | binary(),
     protocols :: binary(),
     error_url :: undefined | uri(),
-    keys :: undefined | [#saml_key_info{}],
+    keys = [] :: [#saml_key_info{}],
     organization :: undefined | #saml_organization{},
-    contacts :: undefined | [#saml_contact{}],
+    contacts = [] :: [#saml_contact{}],
 
     % attributes etc
-    name_id_formats :: undefined | [uri()],
+    name_id_formats = [] :: [uri()],
     want_authn_reqs_signed = false :: boolean(),
-    attribute_profiles :: undefined | [uri()],
-    attributes :: undefined | [#saml_attribute{}],
+    attribute_profiles = [] :: [uri()],
+    attributes = [] :: [#saml_attribute{}],
 
     % endpoints
-    artifact_resolution :: undefined | [#saml_endpoint{}],
-    single_logout :: undefined | [#saml_endpoint{}],
-    manage_name_id :: undefined | [#saml_endpoint{}],
-    single_sign_on :: [#saml_endpoint{}],
-    name_id_mapping :: [#saml_endpoint{}],
+    artifact_resolution = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'ArtifactResolutionService'})],
+    single_logout = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'SingleLogoutService'})],
+    manage_name_id = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'ManageNameIDService'})],
+    single_sign_on :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'SingleSignOnService'})],
+    name_id_mapping = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'NameIDMappingService'})]
+    }).
+
+-record(saml_attr_req, {
+    required = false :: boolean(),
+    name :: binary(),
+    name_format :: undefined | uri(),
+    friendly_name :: undefined | binary(),
+    values :: [binary()]
+    }).
+
+-record(saml_attr_reqs, {
+    index :: binary(),
+    default = false :: boolean(),
+    name :: [xmlrat:tagged_record(#saml_intl_string{},
+        {md, 'ServiceName'})],
+    description = [] :: [xmlrat:tagged_record(#saml_intl_string{},
+        {md, 'ServiceDescription'})],
+    attrs :: [#saml_attr_req{}]
+    }).
+
+-record(saml_sp_metadata, {
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    protocols :: binary(),
+    error_url :: undefined | uri(),
+    keys = [] :: [#saml_key_info{}],
+    organization :: undefined | #saml_organization{},
+    contacts = [] :: [#saml_contact{}],
+
+    % attributes etc
+    name_id_formats = [] :: [uri()],
+    authn_reqs_signed = false :: boolean(),
+    want_assertions_signed = false :: boolean(),
+
+    % endpoints
+    artifact_resolution = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'ArtifactResolutionService'})],
+    single_logout = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'SingleLogoutService'})],
+    manage_name_id = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'ManageNameIDService'})],
+    assertion = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AssertionConsumerService'})],
+    attr_reqs = [] :: [#saml_attr_reqs{}]
+    }).
+
+-record(saml_authn_metadata, {
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    protocols :: binary(),
+    error_url :: undefined | uri(),
+    keys = [] :: [#saml_key_info{}],
+    organization :: undefined | #saml_organization{},
+    contacts = [] :: [#saml_contact{}],
+
+    % attributes etc
+    name_id_formats = [] :: [uri()],
+
+    % endpoints
+    authn_query = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AuthnQueryService'})],
+    assertion_id_req = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AssertionIDRequestService'})]
+    }).
+
+-record(saml_attr_metadata, {
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    protocols :: binary(),
+    error_url :: undefined | uri(),
+    keys = [] :: [#saml_key_info{}],
+    organization :: undefined | #saml_organization{},
+    contacts = [] :: [#saml_contact{}],
+
+    % attributes etc
+    name_id_formats = [] :: [uri()],
+    profiles = [] :: [uri()],
+    attrs = [] :: [#saml_attribute{}],
+
+    % endpoints
+    attr_query = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AttributeService'})],
+    assertion_id_req = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AssertionIDRequestService'})]
+    }).
+
+-record(saml_pdp_metadata, {
+    id :: undefined | unique_id(),
+    valid_until :: undefined | datetime(),
+    cache_duration :: undefined | binary(),
+    protocols :: binary(),
+    error_url :: undefined | uri(),
+    keys = [] :: [#saml_key_info{}],
+    organization :: undefined | #saml_organization{},
+    contacts = [] :: [#saml_contact{}],
+
+    % attributes etc
+    name_id_formats = [] :: [uri()],
+
+    % endpoints
+    authz_query = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AuthzService'})],
+    assertion_id_req = [] :: [xmlrat:tagged_record(
+        #saml_endpoint{}, {md, 'AssertionIDRequestService'})]
     }).
 
 -record(saml_metadata, {
@@ -292,10 +407,11 @@
     valid_until :: undefined | datetime(),
     cache_duration :: undefined | binary(),
     organization :: undefined | #saml_organization{},
-    contacts :: undefined | [#saml_contact{}],
-    additional_md :: undefined | [uri()],
+    contacts = [] :: [#saml_contact{}],
+    additional_md = [] :: [uri()],
     idp :: undefined | #saml_idp_metadata{},
     sp :: undefined | #saml_sp_metadata{},
     authn :: undefined | #saml_authn_metadata{},
+    attr :: undefined | #saml_attr_metadata{},
     pdp :: undefined | #saml_pdp_metadata{}
     }).

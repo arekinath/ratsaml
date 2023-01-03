@@ -356,11 +356,11 @@
     tag => "/*/name()",
     lang => "/*/@xml:lang",
     value => "/*/text()"
-    }}).
+    }, ?NS}).
 -xml_record({gen_intl_string, saml_intl_string,
-    "<mxsl:tag mxsl:field='tag' xml:lang='&lang;>"
+    "<mxsl:tag mxsl:field='tag' xml:lang='&lang;'>"
         "&value;"
-    "</mxsl:tag>"}).
+    "</mxsl:tag>", ?NS}).
 
 -xpath_record({match_endpoint, saml_endpoint, #{
     tag => "/*/name()",
@@ -399,7 +399,7 @@
     given_name => "/md:ContactPerson/md:GivenName/text()",
     surname => "/md:ContactPerson/md:SurName/text()",
     email => "/md:ContactPerson/md:EmailAddress",
-    phone => "/md:ContactPerson/md:TelephoneNumber",
+    phone => "/md:ContactPerson/md:TelephoneNumber"
     }, ?NS}).
 -xml_record({gen_contact, saml_contact,
     "<md:ContactPerson contactType='&type;'>"
@@ -418,10 +418,238 @@
     use => "/md:KeyDescriptor/@use",
     info => "/md:KeyDescriptor/ds:KeyInfo"
     }, ?NS}).
--xml_record({gen_key_info, sml_key_info,
+-xml_record({gen_key_info, saml_key_info,
     "<md:KeyDescriptor use='&use;'>"
         "&info;"
     "</md:KeyDescriptor>", ?NS}).
+
+-xpath_record({match_attr_req, saml_attr_req, #{
+    name => "/md:RequestedAttribute/@Name",
+    name_format => "/md:RequestedAttribute/@NameFormat",
+    friendly_name => "/md:RequestedAttribute/@FriendlyName",
+    values => "/md:RequestedAttribute/saml:AttributeValue",
+    required => "/md:RequestedAttribute/@isRequired"
+    }, ?NS}).
+-xml_record({gen_attr_req, saml_attr_req,
+    "<md:RequestedAttribute "
+        "Name='&name;' "
+        "NameFormat='&name_format;' "
+        "FriendlyName='&friendly_name;'>"
+        "<mxsl:if true='required'>"
+            "<mxsl:attribute name='isRequired'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "<mxsl:for-each field='values' as='x'>"
+            "<saml:AttributeValue>&x;</saml:AttributeValue>"
+        "</mxsl:for-each>"
+    "</md:RequestedAttribute>", ?NS}).
+
+-xpath_record({match_authn_metadata, saml_authn_metadata, #{
+    id => "/md:AuthnAuthorityDescriptor/@ID",
+    valid_until => "/md:AuthnAuthorityDescriptor/@validUntil",
+    cache_duration => "/md:AuthnAuthorityDescriptor/@cacheDuration",
+    protocols => "/md:AuthnAuthorityDescriptor/@protocolSupportEnumeration",
+    error_url => "/md:AuthnAuthorityDescriptor/@errorURL",
+    keys => "/md:AuthnAuthorityDescriptor/md:KeyDescriptor",
+    organization => "/md:AuthnAuthorityDescriptor/md:Organization",
+    contacts => "/md:AuthnAuthorityDescriptor/md:ContactPerson",
+    name_id_formats => "/md:AuthnAuthorityDescriptor/md:NameIDFormat",
+    authn_query => "/md:AuthnAuthorityDescriptor/md:AuthzService",
+    assertion_id_req => "/md:AuthnAuthorityDescriptor/md:AssertionIDRequestService"
+    }, ?NS}).
+-xml_record({gen_authn_metadata, saml_authn_metadata,
+    "<md:AuthnAuthorityDescriptor "
+        "ID='&id;' validUntil='&valid_until;' cacheDuration='&cache_duration;' "
+        "protocolSupportEnumeration='&protocols;' "
+        "errorURL='&error_url;'>"
+        "&keys;"
+        "&organization;"
+        "&contacts;"
+        "&name_id_formats;"
+        "&authn_query;"
+        "&assertion_id_req;"
+    "</md:AuthnAuthorityDescriptor>", ?NS}).
+
+-xpath_record({match_attr_metadata, saml_attr_metadata, #{
+    id => "/md:AttributeAuthorityDescriptor/@ID",
+    valid_until => "/md:AttributeAuthorityDescriptor/@validUntil",
+    cache_duration => "/md:AttributeAuthorityDescriptor/@cacheDuration",
+    protocols => "/md:AttributeAuthorityDescriptor/@protocolSupportEnumeration",
+    error_url => "/md:AttributeAuthorityDescriptor/@errorURL",
+    keys => "/md:AttributeAuthorityDescriptor/md:KeyDescriptor",
+    organization => "/md:AttributeAuthorityDescriptor/md:Organization",
+    contacts => "/md:AttributeAuthorityDescriptor/md:ContactPerson",
+    name_id_formats => "/md:AttributeAuthorityDescriptor/md:NameIDFormat",
+    profiles => "/md:AttributeAuthorityDescriptor/md:AttributeProfile",
+    attrs => "/md:AttributeAuthorityDescriptor/saml:Attribute",
+    attr_query => "/md:AttributeAuthorityDescriptor/md:AttributeService",
+    assertion_id_req => "/md:AttributeAuthorityDescriptor/md:AssertionIDRequestService"
+    }, ?NS}).
+-xml_record({gen_attr_metadata, saml_attr_metadata,
+    "<md:AttributeAuthorityDescriptor "
+        "ID='&id;' validUntil='&valid_until;' cacheDuration='&cache_duration;' "
+        "protocolSupportEnumeration='&protocols;' "
+        "errorURL='&error_url;'>"
+        "&keys;"
+        "&organization;"
+        "&contacts;"
+        "&name_id_formats;"
+        "&profiles;"
+        "&attrs;"
+        "&attr_query;"
+        "&assertion_id_req;"
+    "</md:AttributeAuthorityDescriptor>", ?NS}).
+
+-xpath_record({match_pdp_metadata, saml_pdp_metadata, #{
+    id => "/md:PDPDescriptor/@ID",
+    valid_until => "/md:PDPDescriptor/@validUntil",
+    cache_duration => "/md:PDPDescriptor/@cacheDuration",
+    protocols => "/md:PDPDescriptor/@protocolSupportEnumeration",
+    error_url => "/md:PDPDescriptor/@errorURL",
+    keys => "/md:PDPDescriptor/md:KeyDescriptor",
+    organization => "/md:PDPDescriptor/md:Organization",
+    contacts => "/md:PDPDescriptor/md:ContactPerson",
+    name_id_formats => "/md:PDPDescriptor/md:NameIDFormat",
+    authz_query => "/md:PDPDescriptor/md:AuthzService",
+    assertion_id_req => "/md:PDPDescriptor/md:AssertionIDRequestService"
+    }, ?NS}).
+-xml_record({gen_pdp_metadata, saml_pdp_metadata,
+    "<md:PDPDescriptor "
+        "ID='&id;' validUntil='&valid_until;' cacheDuration='&cache_duration;' "
+        "protocolSupportEnumeration='&protocols;' "
+        "errorURL='&error_url;'>"
+        "&keys;"
+        "&organization;"
+        "&contacts;"
+        "&name_id_formats;"
+        "&authz_query;"
+        "&assertion_id_req;"
+    "</md:PDPDescriptor>", ?NS}).
+
+-xpath_record({match_attr_reqs, saml_attr_reqs, #{
+    index => "/md:AttributeConsumingService/@index",
+    default => "/md:AttributeConsumingService/@isDefault",
+    name => "/md:AttributeConsumingService/md:ServiceName",
+    description => "/md:AttributeConsumingService/md:ServiceDescription",
+    attrs => "/md:AttributeConsumingService/md:RequestedAttribute"
+    }, ?NS}).
+-xml_record({gen_attr_reqs, saml_attr_reqs,
+    "<md:AttributeConsumingService index='&index;'>"
+        "<mxsl:if true='default'>"
+            "<mxsl:attribute name='isDefault'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "&name;"
+        "&description;"
+        "&attrs;"
+    "</md:AttributeConsumingService>", ?NS}).
+
+-xpath_record({match_sp_metadata, saml_sp_metadata, #{
+    id => "/md:SPSSODescriptor/@ID",
+    valid_until => "/md:SPSSODescriptor/@validUntil",
+    cache_duration => "/md:SPSSODescriptor/@cacheDuration",
+    protocols => "/md:SPSSODescriptor/@protocolSupportEnumeration",
+    error_url => "/md:SPSSODescriptor/@errorURL",
+    keys => "/md:SPSSODescriptor/md:KeyDescriptor",
+    organization => "/md:SPSSODescriptor/md:Organization",
+    contacts => "/md:SPSSODescriptor/md:ContactPerson",
+    name_id_formats => "/md:SPSSODescriptor/md:NameIDFormat",
+    authn_reqs_signed => "/md:SPSSODescriptor/@AuthnRequestsSigned",
+    want_assertions_signed => "/md:SPSSODescriptor/@WantAssertionsSigned",
+    artifact_resolution => "/md:SPSSODescriptor/md:ArtifactResolutionService",
+    single_logout => "/md:SPSSODescriptor/md:SingleLogoutService",
+    manage_name_id => "/md:SPSSODescriptor/md:ManageNameIDService",
+    assertion => "/md:SPSSODescriptor/md:AssertionConsumerService",
+    attr_reqs => "/md:SPSSODescriptor/md:AttributeConsumingService"
+    }, ?NS}).
+-xml_record({gen_sp_metadata, saml_sp_metadata,
+    "<md:SPSSODescriptor "
+        "ID='&id;' validUntil='&valid_until;' cacheDuration='&cache_duration;' "
+        "protocolSupportEnumeration='&protocols;' "
+        "errorURL='&error_url;'>"
+        "<mxsl:if true='authn_reqs_signed'>"
+            "<mxsl:attribute name='AuthnRequestsSigned'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "<mxsl:if true='want_assertions_signed'>"
+            "<mxsl:attribute name='WantAssertionsSigned'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "&keys;"
+        "&organization;"
+        "&contacts;"
+        "&name_id_formats;"
+        "&artifact_resolution;"
+        "&single_logout;"
+        "&manage_name_id;"
+        "&assertion;"
+        "&attr_reqs;"
+    "</md:SPSSODescriptor>", ?NS}).
+
+-xpath_record({match_idp_metadata, saml_idp_metadata, #{
+    id => "/md:IDPSSODescriptor/@ID",
+    valid_until => "/md:IDPSSODescriptor/@validUntil",
+    cache_duration => "/md:IDPSSODescriptor/@cacheDuration",
+    protocols => "/md:IDPSSODescriptor/@protocolSupportEnumeration",
+    error_url => "/md:IDPSSODescriptor/@errorURL",
+    keys => "/md:IDPSSODescriptor/md:KeyDescriptor",
+    organization => "/md:IDPSSODescriptor/md:Organization",
+    contacts => "/md:IDPSSODescriptor/md:ContactPerson",
+    name_id_formats => "/md:IDPSSODescriptor/md:NameIDFormat",
+    want_authn_reqs_signed => "/md:IDPSSODescriptor/@WantAuthnRequestsSigned",
+    attribute_profiles => "/md:IDPSSODescriptor/md:AttributeProfile",
+    attributes => "/md:IDPSSODescriptor/saml:Attribute",
+    artifact_resolution => "/md:IDPSSODescriptor/md:ArtifactResolutionService",
+    single_logout => "/md:IDPSSODescriptor/md:SingleLogoutService",
+    manage_name_id => "/md:IDPSSODescriptor/md:ManageNameIDService",
+    single_sign_on => "/md:IDPSSODescriptor/md:SingleSignOnService",
+    name_id_mapping => "/md:IDPSSODescriptor/md:NameIDMappingService"
+    }, ?NS}).
+-xml_record({gen_idp_metadata, saml_idp_metadata,
+    "<md:IDPSSODescriptor "
+        "ID='&id;' validUntil='&valid_until;' cacheDuration='&cache_duration;' "
+        "protocolSupportEnumeration='&protocols;' "
+        "errorURL='&error_url;'>"
+        "<mxsl:if true='want_authn_reqs_signed'>"
+            "<mxsl:attribute name='WantAuthnRequestsSigned'>true</mxsl:attribute>"
+        "</mxsl:if>"
+        "&keys;"
+        "&organization;"
+        "&contacts;"
+        "&name_id_formats;"
+        "&attribute_profiles;"
+        "&attributes;"
+        "&artifact_resolution;"
+        "&single_logout;"
+        "&manage_name_id;"
+        "&single_sign_on;"
+        "&name_id_mapping;"
+    "</md:IDPSSODescriptor>", ?NS}).
+
+-xpath_record({match_metadata, saml_metadata, #{
+    entity_id => "/md:EntityDescriptor/@entityID",
+    id => "/md:EntityDescriptor/@ID",
+    valid_until => "/md:EntityDescriptor/@validUntil",
+    cache_duration => "/md:EntityDescriptor/@cacheDuration",
+    organization => "/md:EntityDescriptor/md:Organization",
+    contacts => "/md:EntityDescriptor/md:ContactPerson",
+    additional_md => "/md:EntityDescriptor/md:AdditionalMetadataLocation",
+    idp => "/md:EntityDescriptor/md:IDPSSODescriptor",
+    sp => "/md:EntityDescriptor/md:SPSSODescriptor",
+    authn => "/md:EntityDescriptor/md:AuthnAuthorityDescriptor",
+    attr => "/md:EntityDescriptor/md:AttributeAuthorityDescriptor",
+    pdp => "/md:EntityDescriptor/md:PDPDescriptor"
+    }, ?NS}).
+-xml_record({gen_metadata, saml_metadata,
+    "<md:EntityDescriptor entityID='&entity_id;' ID='&id;' "
+        "validUntil='&valid_until;' cacheDuration='&cache_duration;'>"
+        "&organization;"
+        "&contacts;"
+        "<mxsl:for-each field='additional_md' as='x'>"
+            "<md:AdditionalMetadataLocation>&x;</md:AdditionalMetadataLocation>"
+        "</mxsl:for-each>"
+        "&idp;"
+        "&sp;"
+        "&authn;"
+        "&attr;"
+        "&pdp;"
+    "</md:EntityDescriptor>", ?NS}).
 
 -ifdef(TEST).
 -include_lib("eunit/include/eunit.hrl").
@@ -469,5 +697,37 @@ samltool_logoutresp_test() ->
     {ok, Doc} = xmlrat_parse:file("test/samltool-logoutresp.xml"),
     Rec = match_logout_response(Doc),
     ?assertMatch(#saml_logout_response{}, Rec).
+
+samltest_idp_md_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltest-idp-md.xml"),
+    Rec = match_metadata(Doc),
+    ?assertMatch(#saml_metadata{entity_id = <<"https://samltest.id/saml/idp">>,
+                                sp = undefined, authn = undefined,
+                                attr = undefined, pdp = undefined}, Rec),
+    #saml_metadata{idp = IDP} = Rec,
+    #saml_idp_metadata{protocols = Protos, single_sign_on = SSO} = IDP,
+    ProtoList = binary:split(Protos, [<<" ">>, <<"\t">>, <<"\n">>], [global]),
+    ?assertMatch(true, lists:member(?PR_saml2, ProtoList)),
+    ?assertMatch([_Shib, ?BD_http_post, _PostSimp, ?BD_http_redir, ?BD_soap],
+        [Binding || #saml_endpoint{binding = Binding} <- SSO]),
+    [Post] = [E || E = #saml_endpoint{binding = ?BD_http_post} <- SSO],
+    ?assertMatch(#saml_endpoint{
+        location = <<"https://samltest.id/idp/profile/SAML2/POST/SSO">>},
+        Post).
+
+samltest_all_md_test() ->
+    {ok, Doc} = xmlrat_parse:file("test/samltest-sp-md.xml"),
+    Rec = match_metadata(Doc),
+    ?assertMatch(#saml_metadata{entity_id = <<"https://samltest.id/saml/sp">>,
+                                idp = undefined, authn = undefined,
+                                attr = undefined, pdp = undefined}, Rec),
+    #saml_metadata{sp = SP} = Rec,
+    #saml_sp_metadata{protocols = Protos, assertion = AEP} = SP,
+    ProtoList = binary:split(Protos, [<<" ">>, <<"\t">>, <<"\n">>], [global]),
+    ?assertMatch(true, lists:member(?PR_saml2, ProtoList)),
+    [Post] = [E || E = #saml_endpoint{binding = ?BD_http_post} <- AEP],
+    ?assertMatch(#saml_endpoint{index = <<"1">>,
+        location = <<"https://samltest.id/Shibboleth.sso/SAML2/POST">>},
+        Post).
 
 -endif.
