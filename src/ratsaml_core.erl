@@ -92,6 +92,10 @@
     gen_subject/2,
     gen_subj_locality/1,
     gen_subj_locality/2,
+    gen_ui_logo/1,
+    gen_ui_logo/2,
+    gen_ui_metadata/1,
+    gen_ui_metadata/2,
     match_assertion/1,
     match_attribute/1,
     match_attr_metadata/1,
@@ -121,7 +125,9 @@
     match_status/1,
     match_subj_confirmation/1,
     match_subject/1,
-    match_subj_locality/1
+    match_subj_locality/1,
+    match_ui_logo/1,
+    match_ui_metadata/1
     ]).
 
 -include_lib("ratsaml/include/records.hrl").
@@ -130,6 +136,7 @@
     <<"saml">> => ?NS_saml,
     <<"samlp">> => ?NS_samlp,
     <<"md">> => ?NS_md,
+    <<"mdui">> => ?NS_mdui,
     <<"ds">> => ?NS_dsig
     }).
 
@@ -453,6 +460,37 @@
         "&value;"
     "</mxsl:tag>", ?NS}).
 
+-xpath_record({match_ui_logo, saml_ui_logo, #{
+    lang => "/mdui:Logo/@xml:lang",
+    height => "/mdui:Logo/@height",
+    width => "/mdui:Logo/@width",
+    url => "/mdui:Logo/text()"
+    }, ?NS}).
+-xml_record({gen_ui_logo, saml_ui_logo,
+    "<mdui:Logo xml:lang='&lang;' "
+        "height='&height;' "
+        "width='&width;'>"
+        "&url;"
+    "</mdui:Logo>", ?NS}).
+
+-xpath_record({match_ui_metadata, saml_ui_metadata, #{
+    display_names => "/mdui:UIInfo/mdui:DisplayName",
+    descriptions => "/mdui:UIInfo/mdui:Description",
+    keywords => "/mdui:UIInfo/mdui:Keywords",
+    logos => "/mdui:UIInfo/mdui:Logo",
+    info_urls => "/mdui:UIInfo/mdui:InformationURL",
+    privacy_urls => "/mdui:UIInfo/mdui:PrivacyStatementURL"
+    }, ?NS}).
+-xml_record({gen_ui_metadata, saml_ui_metadata,
+    "<mdui:UIInfo>"
+        "&display_names;"
+        "&descriptions;"
+        "&keywords;"
+        "&logos;"
+        "&info_urls;"
+        "&privacy_urls;"
+    "</mdui:UIInfo>", ?NS}).
+
 -xpath_record({match_endpoint, saml_endpoint, #{
     tag => "/*/name()",
     binding => "/*/@Binding",
@@ -462,11 +500,15 @@
     default => "/*/@isDefault"
     }, ?NS}).
 -xml_record({gen_endpoint, saml_endpoint,
-    "<mxsl:tag mxsl:field='tag' "
-        "Binding='&binding;' "
-        "Location='&location;' "
-        "ResponseLocation='&response_location;' "
-        "index='&index;'>"
+    "<mxsl:tag mxsl:field='tag'>"
+        "<mxsl:attribute name='Binding'>&binding;</mxsl:attribute>"
+        "<mxsl:attribute name='Location'>&location;</mxsl:attribute>"
+        "<mxsl:if defined='response_location'>"
+            "<mxsl:attribute name='ResponseLocation'>&response_location;</mxsl:attribute>"
+        "</mxsl:if>"
+        "<mxsl:if defined='index'>"
+            "<mxsl:attribute name='index'>&index;</mxsl:attribute>"
+        "</mxsl:if>"
         "<mxsl:if true='default'>"
             "<mxsl:attribute name='isDefault'>true</mxsl:attribute>"
         "</mxsl:if>"
@@ -649,7 +691,8 @@
     single_logout => "/md:SPSSODescriptor/md:SingleLogoutService",
     manage_name_id => "/md:SPSSODescriptor/md:ManageNameIDService",
     assertion => "/md:SPSSODescriptor/md:AssertionConsumerService",
-    attr_reqs => "/md:SPSSODescriptor/md:AttributeConsumingService"
+    attr_reqs => "/md:SPSSODescriptor/md:AttributeConsumingService",
+    ui => "/md:SPSSODescriptor/md:Extensions/mdui:UIInfo"
     }, ?NS}).
 -xml_record({gen_sp_metadata, saml_sp_metadata,
     "<md:SPSSODescriptor "
@@ -665,12 +708,19 @@
         "&keys;"
         "&organization;"
         "&contacts;"
-        "&name_id_formats;"
-        "&artifact_resolution;"
+        "<mxsl:for-each field='name_id_formats' as='x'>"
+            "<md:NameIDFormat>&x;</md:NameIDFormat>"
+        "</mxsl:for-each>"
+        "&assertion;"
         "&single_logout;"
         "&manage_name_id;"
-        "&assertion;"
+        "&artifact_resolution;"
         "&attr_reqs;"
+        "<mxsl:if defined='ui'>"
+            "<md:Extensions>"
+                "&ui;"
+            "</md:Extensions>"
+        "</mxsl:if>"
     "</md:SPSSODescriptor>", ?NS}).
 
 -xpath_record({match_idp_metadata, saml_idp_metadata, #{
@@ -690,7 +740,8 @@
     single_logout => "/md:IDPSSODescriptor/md:SingleLogoutService",
     manage_name_id => "/md:IDPSSODescriptor/md:ManageNameIDService",
     single_sign_on => "/md:IDPSSODescriptor/md:SingleSignOnService",
-    name_id_mapping => "/md:IDPSSODescriptor/md:NameIDMappingService"
+    name_id_mapping => "/md:IDPSSODescriptor/md:NameIDMappingService",
+    ui => "/md:IDPSSODescriptor/md:Extensions/mdui:UIInfo"
     }, ?NS}).
 -xml_record({gen_idp_metadata, saml_idp_metadata,
     "<md:IDPSSODescriptor "
@@ -703,7 +754,9 @@
         "&keys;"
         "&organization;"
         "&contacts;"
-        "&name_id_formats;"
+        "<mxsl:for-each field='name_id_formats' as='x'>"
+            "<md:NameIDFormat>&x;</md:NameIDFormat>"
+        "</mxsl:for-each>"
         "&attribute_profiles;"
         "&attributes;"
         "&artifact_resolution;"
@@ -711,6 +764,11 @@
         "&manage_name_id;"
         "&single_sign_on;"
         "&name_id_mapping;"
+        "<mxsl:if defined='ui'>"
+            "<md:Extensions>"
+                "&ui;"
+            "</md:Extensions>"
+        "</mxsl:if>"
     "</md:IDPSSODescriptor>", ?NS}).
 
 -xpath_record({match_metadata, saml_metadata, #{

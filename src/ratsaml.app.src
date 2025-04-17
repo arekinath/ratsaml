@@ -5,7 +5,10 @@
   {applications,
    [kernel,
     stdlib,
-    xmlrat
+    xmlrat,
+    public_key,
+    cowboy,
+    lager
    ]},
   {env,[]},
   {modules, []},

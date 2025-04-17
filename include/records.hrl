@@ -29,6 +29,7 @@
 -define(NS_samlp, <<"urn:oasis:names:tc:SAML:2.0:protocol">>).
 -define(NS_dsig, <<"http://www.w3.org/2000/09/xmldsig#">>).
 -define(NS_md, <<"urn:oasis:names:tc:SAML:2.0:metadata">>).
+-define(NS_mdui, <<"urn:oasis:names:tc:SAML:metadata:ui">>).
 -define(NS_xenc, <<"http://www.w3.org/2001/04/xmlenc#">>).
 -define(NS_xs, <<"http://www.w3.org/2001/XMLSchema">>).
 -define(NS_xsi, <<"http://www.w3.org/2001/XMLSchema-instance">>).
@@ -265,6 +266,27 @@
     default = false :: boolean()
     }).
 
+-record(saml_ui_logo, {
+    lang :: undefined | binary(),
+    height :: binary(),
+    width :: binary(),
+    url :: binary()
+    }).
+
+-record(saml_ui_metadata, {
+    display_names = [] ::
+        [xmlrat:tagged_record(#saml_intl_string{}, {mdui, 'DisplayName'})],
+    descriptions = [] ::
+        [xmlrat:tagged_record(#saml_intl_string{}, {mdui, 'Description'})],
+    keywords = [] ::
+        [xmlrat:tagged_record(#saml_intl_string{}, {mdui, 'Keywords'})],
+    logos = [] :: [#saml_ui_logo{}],
+    info_urls = [] ::
+        [xmlrat:tagged_record(#saml_intl_string{}, {mdui, 'InformationURL'})],
+    privacy_urls = [] ::
+        [xmlrat:tagged_record(#saml_intl_string{}, {mdui, 'PrivacyStatementURL'})]
+    }).
+
 -record(saml_idp_metadata, {
     id :: undefined | unique_id(),
     valid_until :: undefined | datetime(),
@@ -274,6 +296,7 @@
     keys = [] :: [#saml_key_info{}],
     organization :: undefined | #saml_organization{},
     contacts = [] :: [#saml_contact{}],
+    ui :: undefined | #saml_ui_metadata{},
 
     % attributes etc
     name_id_formats = [] :: [uri()],
@@ -321,6 +344,7 @@
     keys = [] :: [#saml_key_info{}],
     organization :: undefined | #saml_organization{},
     contacts = [] :: [#saml_contact{}],
+    ui :: undefined | #saml_ui_metadata{},
 
     % attributes etc
     name_id_formats = [] :: [uri()],
